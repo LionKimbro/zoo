@@ -1,13 +1,13 @@
 """projwin.py  -- window displaying a single project"""
 
-from symbols import *
+from .symbols import *
 
-import gui
-import util
-import guiutil
+from . import gui
+from . import util
+from . import guiutil
 
-import proj
-from proj import kTAG, kTITLE, kCREATED, kTAGS, kHOOK  # kID -- name conflict
+from . import proj
+from .proj import kTAG, kTITLE, kCREATED, kTAGS, kHOOK  # kID -- name conflict
 
 
 tcl_code = """
@@ -153,7 +153,7 @@ def curproj():
 # Callbacks
 
 def openproj():
-    import paths
+    from . import paths
     paths.windows_open_project(curproj()[proj.kID])
 
 

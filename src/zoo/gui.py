@@ -6,13 +6,13 @@ select(win)  -- select a window
 
 import tkinter as tk
 
-from symbols import *
-from listdict import cue as list_cue
-from listdict import val, val1, val01, req, srt
-from listdict import EQ, NEQ, GT, LT, GTE, LTE
-from listdict import CONTAINS, NCONTAINS, WITHIN, NWITHIN
+from .symbols import *
+from .listdict import cue as list_cue
+from .listdict import val, val1, val01, req, srt
+from .listdict import EQ, NEQ, GT, LT, GTE, LTE
+from .listdict import CONTAINS, NCONTAINS, WITHIN, NWITHIN
 
-import menubar
+from . import menubar
 
 
 # Global Variables
@@ -505,4 +505,3 @@ def task_exit():
 def permtask_fn(fn):
     permanent_tasks.append({TYPE:CALL,
                             FN: fn})
-

@@ -1,7 +1,7 @@
 
-from symbols import *
+from .symbols import *
 
-import gui
+from . import gui
 
 
 tcl_code = """
@@ -23,29 +23,29 @@ $w.menubar add command -label "Search" -command "opensearch" -underline 0
 """
 
 def opensearch():
-    import searchwin
+    from . import searchwin
     searchwin.open_up()
 
 def newproject():
-    import proj
-    import projwin
+    from . import proj
+    from . import projwin
     projwin.open_up(proj.new())
     
 
 def opensource():
-    import paths
+    from . import paths
     paths.windows_open_file(PROJ)
 
 def opensourcedir():
-    import paths
+    from . import paths
     paths.windows_open_dir(DIR)
 
 def reloadsource():
-    import proj
+    from . import proj
     proj.load()
 
 def savestate():
-    import proj
+    from . import proj
     proj.save()
 
 def closewindow():

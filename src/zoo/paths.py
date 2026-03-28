@@ -1,6 +1,6 @@
 """paths.py  -- path resolution, and basic file access"""
 
-from symbols import *
+from .symbols import *
 
 import json
 import os

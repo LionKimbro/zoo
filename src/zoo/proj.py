@@ -1,12 +1,12 @@
 """proj.py  -- data access (projects)"""
 
-from symbols import *
+from .symbols import *
 
 import uuid
 
-import util
-import paths
-import listdict
+from . import util
+from . import paths
+from . import listdict
 
 
 PROJECTS = "PROJECTS"  # project_id -> full project dict
@@ -36,7 +36,7 @@ SUMMARY_FIELDS = [kID, kTITLE, kTAG, kTAGS, kCREATED, kHOOK]
 
 def setup():
     load()
-    import gui
+    from . import gui
     gui.permtask_fn(update)
 
 

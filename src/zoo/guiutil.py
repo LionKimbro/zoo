@@ -1,9 +1,9 @@
 """guiutil.py  -- various utilities (for the GUI)"""
 
-from symbols import *
+from .symbols import *
 
-import util
-import gui
+from . import util
+from . import gui
 
 
 g = {BINDINGS: None,  # bindings source

@@ -2,7 +2,7 @@
 
 import time
 
-from symbols import *
+from .symbols import *
 
 
 ## globals

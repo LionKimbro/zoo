@@ -1,12 +1,12 @@
 """search.py  -- core interactive window: searching"""
 
-from symbols import *
+from .symbols import *
 
-import gui
-import util
+from . import gui
+from . import util
 
-import proj
-import projwin
+from . import proj
+from . import projwin
 
 
 tcl_code = """

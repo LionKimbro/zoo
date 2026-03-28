@@ -1,20 +1,24 @@
 """go.py  -- initialization & kick-off execution"""
 
-import gui
-import menubar
-import proj
-import searchwin
-import projwin
+from . import gui
+from . import menubar
+from . import proj
+from . import searchwin
+from . import projwin
 
 
-proj.setup()
-gui.setup()
-menubar.setup()
+def run():
+    proj.setup()
+    gui.setup()
+    menubar.setup()
 
-searchwin.setup()
-projwin.setup()
+    searchwin.setup()
+    projwin.setup()
+
+    searchwin.open_up()
+    gui.loop()
 
 
-searchwin.open_up()
-gui.loop()
+if __name__ == "__main__":
+    run()
 
