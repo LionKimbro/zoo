@@ -84,10 +84,10 @@ def repopulate():
     # TODO: get the selection, if there is one
     gui.tree_clear()
     for D in proj.locate_tagged(txt):
-        gui.tree_add(D[proj.kID],
-                     [D[proj.kTITLE],
-                      D[proj.kCREATED],
-                      D[proj.kHOOK]])
+        gui.tree_add(D.get(proj.kID, ""),
+                     [D.get(proj.kTITLE, ""),
+                      D.get(proj.kCREATED, ""),
+                      D.get(proj.kHOOK, "")])
     # TODO: repopulate the selected one, if possible
 
 

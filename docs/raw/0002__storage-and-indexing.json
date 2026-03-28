@@ -42,6 +42,9 @@
     "character": [
       "The index is derived data and not authoritative.",
       "The index may be rebuilt at any time from project files.",
+      "Systems should use the index for fast runtime enumeration and search.",
+      "On startup, applications may load the index into memory and operate from that in-memory copy.",
+      "Before writing amendments to the index, applications should reread the index from disk, apply the amendment to the fresh copy, and then write it back.",
       "Systems must not rely on the index being present or up to date."
     ]
   },
@@ -53,7 +56,8 @@
       "title",
       "tag",
       "tags",
-      "created"
+      "created",
+      "hook"
     ]
   },
 
@@ -77,6 +81,7 @@
     "Do not store filesystem paths inside project JSON files.",
     "Treat the filesystem as the primary storage mechanism.",
     "Treat index files as caches, not sources of truth.",
+    "Include enough summary information in the index to support fast browsing UI, including the hook field.",
     "Prefer simplicity and inspectability over abstraction."
   ]
 }

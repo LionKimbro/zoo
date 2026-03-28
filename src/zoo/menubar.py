@@ -58,7 +58,7 @@ def setup():
     gui.mkcmd("newproject", lambda: gui.task_fn(newproject))
     gui.mkcmd("opensource", lambda: gui.task_fn(opensource))
     gui.mkcmd("opensourcedir", lambda: gui.task_fn(opensourcedir))
-    gui.mkcmd("reloadproj", lambda: gui.task_fn(reloadproj))
+    gui.mkcmd("reloadsource", lambda: gui.task_fn(reloadsource))
     gui.mkcmd("savestate", lambda: gui.task_fn(savestate))
     gui.mkcmd("closewindow", lambda: gui.task_fn(closewindow))
     gui.mkcmd("exitprogram", gui.task_exit)

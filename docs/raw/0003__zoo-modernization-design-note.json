@@ -1,0 +1,92 @@
+{
+  "document": {
+    "document-id": "zoo.modernization-design-note.v1",
+    "title": "Zoo Modernization Design Note",
+    "tags": ["zoo", "modernization", "design", "migration", "ui", "storage"],
+    "purpose": "Capture the design bridge between the 2022 Zoo implementation and the newer Zoo storage and indexing model.",
+    "author": ["Lion Kimbro", "ChatGPT"],
+    "status": "draft",
+    "version": "v1"
+  },
+
+  "overview": {
+    "basic": "Zoo is being modernized from an older GUI application built around a single registry file and project directories into a filesystem-based system where each project has its own JSON file and the runtime operates primarily from an index.",
+    "goal": "Preserve the strengths of the earlier Zoo application while replacing the storage model with a simpler, faster, more inspectable architecture.",
+    "source-material": [
+      "2022 Zoo code in src/zoo/",
+      "zoo.project-json.format.v1",
+      "zoo.storage-and-indexing.v1",
+      "Lion's Dictionary for LLMs",
+      "Lion's Python Programming Guidelines (2025) -- Simplified Edition"
+    ]
+  },
+
+  "preserve": [
+    "Preserve the interaction model of a fast search window leading into recurring per-project windows.",
+    "Preserve the small core project vocabulary: id, tag, title, created, tags, description, hook.",
+    "Preserve the filesystem-first philosophy: project files are authoritative and indexes are derived caches.",
+    "Preserve the direct procedural implementation style: explicit functions, simple globals, simple JSON I/O, minimal abstraction."
+  ],
+
+  "discard-or-translate": [
+    "Discard the single authoritative registry file model used by the 2022 application.",
+    "Discard the assumption that every project must have a dedicated on-disk folder.",
+    "Discard the old LOC field as a core part of project identity or required storage behavior.",
+    "Translate load-all-projects behavior into index-based browsing plus per-project file reads when a specific project is opened."
+  ],
+
+  "modern-storage-model": {
+    "root-resolution": {
+      "machine-root-key": "db-root-2026",
+      "python-example": "import machineroot\\nmachineroot.get(\"db-root-2026\")",
+      "meaning": "Zoo storage is rooted at the path returned by Machine-Root for db-root-2026."
+    },
+    "paths": {
+      "zoo-root": "<machine-root:db-root-2026>/zoo/",
+      "projects-path": "<machine-root:db-root-2026>/zoo/projects/",
+      "index-path": "<machine-root:db-root-2026>/zoo/index.json"
+    },
+    "project-files": {
+      "authority": "Each project file is authoritative for that project.",
+      "shape": "Each project is stored as a separate JSON file under projects/.",
+      "note": "A project may exist with no additional on-disk material besides its project JSON file and corresponding index entry."
+    },
+    "index": {
+      "role": "The index is the fast runtime structure used for enumeration, search, and quick UI startup.",
+      "authority": "The index is derived and not authoritative.",
+      "summary-fields": [
+        "id",
+        "title",
+        "tag",
+        "tags",
+        "created",
+        "hook"
+      ]
+    }
+  },
+
+  "runtime-behavior": [
+    "On startup, the application should read index.json and keep it in memory for normal browsing and search.",
+    "When the user opens a specific project, the application may then read that project's JSON file.",
+    "Before any write to index.json, the application should reread index.json from disk, apply the amendment to that fresh copy, and then write it back.",
+    "Index writes should be atomic.",
+    "A rebuild path should exist so that index.json can be regenerated from the project files."
+  ],
+
+  "ui-implications": [
+    "Search and result listing should operate from the in-memory index rather than by scanning every project file.",
+    "The hook field belongs in the index so that result lists can show the hook without opening each project file.",
+    "Per-project windows should load full project data only when needed."
+  ],
+
+  "implementation-direction": [
+    "Replace hard-coded legacy paths with Machine-Root based resolution.",
+    "Replace the old registry-backed project access layer with an index-backed browsing layer and per-project file access layer.",
+    "Keep the implementation procedurally simple and readable rather than introducing heavy frameworks or abstractions."
+  ],
+
+  "notes": [
+    "The 2022 Zoo code should be treated as an interaction and implementation ancestor, not as the storage model to preserve literally.",
+    "Fast summon and dismiss behavior is a primary design goal for the modernized application."
+  ]
+}

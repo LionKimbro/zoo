@@ -7,13 +7,13 @@ import util
 import guiutil
 
 import proj
-from proj import kTAG, kTITLE, kCREATED, kTAGS, kLOC, kHOOK  # kID -- name conflict
+from proj import kTAG, kTITLE, kCREATED, kTAGS, kHOOK  # kID -- name conflict
 
 
 tcl_code = """
 ttk::labelframe $top.basics -text "basics"
 ttk::label $top.basics.id_k -text "id:"
-ttk::entry $top.basics.id_v -width 6 -state readonly
+ttk::entry $top.basics.id_v -width 40 -state readonly
 ttk::label $top.basics.uritag_k -text "URI tag:"
 ttk::entry $top.basics.uritag_v -width 70
 ttk::label $top.basics.title_k -text "title:"
@@ -22,12 +22,10 @@ ttk::label $top.basics.created_k -text "created:"
 ttk::entry $top.basics.created_v -width 20 -state readonly
 ttk::label $top.basics.tags_k -text "tags:"
 ttk::entry $top.basics.tags_v -width 100
-ttk::label $top.basics.loc_k -text "loc:"
-ttk::entry $top.basics.loc_v -width 6 -state readonly
 ttk::label $top.basics.hook_k -text "hook:"
 ttk::entry $top.basics.hook_v -width 80
 ttk::labelframe $top.ops -text "operations"
-ttk::button $top.ops.open -text "open" -command projwin_openproj
+ttk::button $top.ops.open -text "open json" -command projwin_openproj
 ttk::labelframe $top.info -text "info"
 ttk::label $top.info.hint
 
@@ -45,10 +43,8 @@ grid $top.basics.created_k -row 3 -column 0 -sticky e
 grid $top.basics.created_v -row 3 -column 1 -sticky w
 grid $top.basics.tags_k -row 4 -column 0 -sticky e
 grid $top.basics.tags_v -row 4 -column 1 -sticky w
-grid $top.basics.loc_k -row 5 -column 0 -sticky e
-grid $top.basics.loc_v -row 5 -column 1 -sticky w
-grid $top.basics.hook_k -row 6 -column 0 -sticky e
-grid $top.basics.hook_v -row 6 -column 1 -sticky w
+grid $top.basics.hook_k -row 5 -column 0 -sticky e
+grid $top.basics.hook_v -row 5 -column 1 -sticky w
 
 grid $top.ops.open -row 0 -column 0
 
@@ -126,6 +122,7 @@ def setup():
 
 
 def open_up(D):  # open with a particular project description
+    D = proj.locate_id(D[proj.kID]) or D
     gui.toplevel_recurring(tkROOT)
     gui.tclexec(tcl_code)
     gui.title(D[proj.kID])
@@ -157,7 +154,7 @@ def curproj():
 
 def openproj():
     import paths
-    paths.windows_open_projdir(curproj()[kLOC])
+    paths.windows_open_project(curproj()[proj.kID])
 
 
 # Update Cycle
@@ -169,7 +166,6 @@ bindings = guiutil.mkbindings(
      "$top.basics.title_v", kTITLE, True,
      "$top.basics.created_v", kCREATED, False,
      "$top.basics.tags_v", kTAGS, True,
-     "$top.basics.loc_v", kLOC, False,
      "$top.basics.hook_v", kHOOK, True]
 )
 
@@ -185,6 +181,8 @@ def update_win():
     """update fn, with $top set to a specific window"""
     tkname = gui.top()
     D = curproj()
+    if D is None:
+        return
     guiutil.use_bindings(bindings)
     guiutil.use_data(D, proj.type_dict)
     if tkname in first_time:

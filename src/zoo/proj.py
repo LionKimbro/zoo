@@ -2,24 +2,36 @@
 
 from symbols import *
 
+import uuid
+
 import util
 import paths
 import listdict
 
 
-g = {DATA: None,  # the raw JSON loaded
-     UPDATE: None,  # update notice (None/int/ACTIVE), "the data has changed,"
-     SEL: None}  # access to a single dictionary in the data, can be mediated
+PROJECTS = "PROJECTS"  # project_id -> full project dict
+DIRTY = "DIRTY"  # set(project ids) that need persistence
 
 
-# keys in the PROJ.txt file (identified by symbol PROJ)
-kID = "ID"
-kTAG = "TAG"
-kTITLE = "TITLE"
-kCREATED = "CREATED"
-kTAGS = "TAGS"
-kLOC = "LOC"
-kHOOK = "HOOK"
+g = {
+    DATA: None,  # in-memory index summaries
+    PROJECTS: {},  # loaded full project records
+    DIRTY: set(),
+    UPDATE: None,  # update notice (None/int/ACTIVE)
+    SEL: None
+}
+
+
+# keys in a project json file
+kID = "id"
+kTAG = "tag"
+kTITLE = "title"
+kCREATED = "created"
+kTAGS = "tags"
+kDESCRIPTION = "description"
+kHOOK = "hook"
+
+SUMMARY_FIELDS = [kID, kTITLE, kTAG, kTAGS, kCREATED, kHOOK]
 
 
 def setup():
@@ -29,59 +41,90 @@ def setup():
 
 
 def load():
-    g[DATA] = paths.read_json(PROJ)
+    g[DATA] = paths.read_index()
+    if g[DATA] is None:
+        g[DATA] = []
+    g[PROJECTS].clear()
+    g[DIRTY].clear()
     note_changed()
 
-def save():
-    paths.write_json(PROJ, g[DATA])
 
-def nextid():
-    return 1 + max([int(D[kID]) for D in g[DATA]])
+def _summary_for(D):
+    return {k: D[k] for k in SUMMARY_FIELDS if k in D}
+
+
+def _sync_summary(project_id):
+    summary = _summary_for(g[PROJECTS][project_id])
+    for i, existing in enumerate(g[DATA]):
+        if existing[kID] == project_id:
+            g[DATA][i] = summary
+            return
+    g[DATA].append(summary)
+
+
+def save():
+    for project_id in list(g[DIRTY]):
+        paths.write_project(project_id, g[PROJECTS][project_id])
+
+    fresh_index = paths.read_index()
+    if fresh_index is None:
+        fresh_index = []
+    by_id = {D[kID]: D for D in fresh_index}
+    for project_id in g[DIRTY]:
+        by_id[project_id] = _summary_for(g[PROJECTS][project_id])
+
+    g[DATA] = list(by_id.values())
+    paths.write_index(g[DATA])
+    g[DIRTY].clear()
+    note_changed()
 
 
 # Change Notification & Update Cycle
 
 def note_changed():
-    """call this whenever the data is changed
-    
-    Call this even if you are going to immediately call delay_updates(),
-    because I might want to do some other things here in the future
-    as well, that are immediate.
-    """
-    g[UPDATE] = 0  # will set ACTIVE for one full cycle, immediately
+    """Call this whenever the data is changed."""
+    g[UPDATE] = 0
+
 
 def delay_updates():
-    """call this to delay updates, because the user is typing or something"""
+    """Call this to delay updates, because the user is typing or something."""
     g[UPDATE] = 5
 
 
 def update():
-    """called once per cycle, once setup()"""
+    """Called once per cycle, once setup()."""
     if g[UPDATE] == TODO:
-        g[UPDATE] = ACTIVE  # set ACTIVE for one full cycle, ...
-    elif type(g[UPDATE]) == int:  # countdown
+        g[UPDATE] = ACTIVE
+    elif type(g[UPDATE]) == int:
         if g[UPDATE] > 0:
             g[UPDATE] -= 1
         else:
             g[UPDATE] = ACTIVE
     elif g[UPDATE] == ACTIVE:
-        g[UPDATE] = None  # and then clear it
+        g[UPDATE] = None
 
 
 # Searching
 
+def _normalize_nodeid(nodeid):
+    return str(nodeid)
+
+
 def locate_id(nodeid):
-    """Locate the entry with the given ID."""
-    listdict.cue(g[DATA])
-    listdict.req(kID, EQ, nodeid)
-    return listdict.val01()
+    """Locate and load the project with the given ID."""
+    project_id = _normalize_nodeid(nodeid)
+    if project_id in g[PROJECTS]:
+        return g[PROJECTS][project_id]
+
+    D = paths.read_project(project_id)
+    if D is None:
+        return None
+    g[PROJECTS][project_id] = D
+    return D
+
 
 def locate_tagged(s):
-    """Locate all entries with a particular set of tags.
-    
-    s: (str) white-space delimited list of tags
-    returns: (list) entries within g[DATA] that include all of the tags
-    """
+    """Locate all index summaries with a particular set of tags."""
     listdict.cue(g[DATA])
     for tag in s.split():
         listdict.req(kTAGS, CONTAINS, tag)
@@ -91,16 +134,20 @@ def locate_tagged(s):
 # New
 
 def new():
-    id_str = str(nextid()).rjust(4,"0")  # ex: 13 -> "0013"
-    D = {kID: id_str,
-         kTAG: "",
-         kTITLE: "",
-         kCREATED: util.iso8601datelocal(),  # ex: "2022-03-30"
-         kTAGS: [],
-         kLOC: id_str,
-         kHOOK: ""}
-    paths.mkprojdir(id_str)
-    g[DATA].append(D)
+    project_id = str(uuid.uuid4())
+    D = {
+        kID: project_id,
+        kTAG: "",
+        kTITLE: "",
+        kCREATED: util.iso8601datelocal(),
+        kTAGS: [],
+        kDESCRIPTION: "",
+        kHOOK: ""
+    }
+    g[PROJECTS][project_id] = D
+    g[DIRTY].add(project_id)
+    _sync_summary(project_id)
+    note_changed()
     return D
 
 
@@ -109,12 +156,14 @@ def new():
 def sel(D):
     g[SEL] = D
 
+
 def get_line(k):
     raw = g[SEL].get(k, "")
     if k == kTAGS:
         return " ".join(raw)
     else:
         return raw
+
 
 def set_line(k, s):
     if k == kTAGS:
@@ -125,11 +174,14 @@ def set_line(k, s):
         else:
             g[SEL][k] = s
 
+    project_id = g[SEL][kID]
+    g[PROJECTS][project_id] = g[SEL]
+    g[DIRTY].add(project_id)
+    _sync_summary(project_id)
+
+
 type_dict = {
     SEL: sel,
     GETLINE: get_line,
     SETLINE: set_line
 }
-
-
-
