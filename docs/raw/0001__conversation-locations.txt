@@ -1,0 +1,6 @@
+date: 2026-03-25
+title: Conversation Locations, re: Zoo development
+
+https://chatgpt.com/c/69c404cf-2514-83e8-9c9a-362958fa8872  -- first (dedicated) conversation: zoo
+https://chatgpt.com/c/69c2fc16-c7c0-83e8-83a5-6c98d71992a1  -- the zookeep conversation that led to the first conversation
+https://chatgpt.com/c/69c409a1-22e4-83e8-af6d-3272197ee231  -- system registry conversation, because needed a wy to locate db

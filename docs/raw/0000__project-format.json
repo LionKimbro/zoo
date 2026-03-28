@@ -1,0 +1,97 @@
+{
+  "document": {
+    "document-id": "zoo.project-json.format.v1",
+    "title": "Zoo Project JSON Format",
+    "tags": ["zoo", "projects", "json", "format"],
+    "purpose": "Describe the JSON format used to represent a single project in Zoo.",
+    "author": ["Lion Kimbro", "Wing-Cat (ChatGPT)"],
+    "status": "draft",
+    "version": "v1"
+  },
+
+  "overview": {
+    "basic": "Each Zoo project is stored as a single JSON file. The file represents one project.",
+    "identity": "Each project has a globally unique identifier stored in the 'id' field. This is the canonical identity.",
+    "philosophy": "The format is minimal and extensible. Only a small set of fields are defined. Additional fields may be added as needed."
+  },
+
+  "file-structure": {
+    "location": "Each project is stored in its own file under zoo/projects/.",
+    "filename": "The filename is typically the project's GUID, for example: <id>.json.",
+    "example": [
+      "zoo/projects/550e8400-e29b-41d4-a716-446655440000.json"
+    ]
+  },
+
+  "fields": {
+    "required": {
+      "id": {
+        "type": "string",
+        "description": "Globally unique identifier for the project (typically a GUID). This is the canonical identity of the project.",
+        "example": "550e8400-e29b-41d4-a716-446655440000"
+      }
+    },
+
+    "optional": {
+      "tag": {
+        "type": "string",
+        "description": "Optional tag URI providing a human-meaningful identity for the project. May be added later.",
+        "example": "tag:lion:2026:project:data-formats"
+      },
+
+      "title": {
+        "type": "string",
+        "description": "Short human-readable name of the project.",
+        "example": "Documenting & Developing My Data Formats"
+      },
+
+      "created": {
+        "type": "string",
+        "description": "Date the project was created, in YYYY-MM-DD format.",
+        "example": "2021-11-30"
+      },
+
+      "tags": {
+        "type": "array of strings",
+        "description": "Loose keywords associated with the project. Used for search and grouping.",
+        "example": ["data", "documentation", "programming"]
+      },
+
+      "description": {
+        "type": "string",
+        "description": "Longer description of the project, providing context and meaning."
+      },
+
+      "hook": {
+        "type": "string",
+        "description": "A short, activating phrase that helps re-enter the project. Often more evocative than the description."
+      }
+    }
+  },
+
+  "example-project": {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "tag": "tag:lion:2026:project:data-formats",
+    "title": "Documenting & Developing My Data Formats",
+    "created": "2021-11-30",
+    "tags": ["data", "documentation", "programming"],
+    "description": "Ongoing effort to document and develop reusable data formats for shared use.",
+    "hook": "Developing a shared language of data formats."
+  },
+
+  "conventions": [
+    "All keys are lower-case.",
+    "Use kebab-case or simple lowercase words for keys.",
+    "Do not require all optional fields.",
+    "Prefer adding fields over modifying existing ones.",
+    "Do not store filesystem paths or locations in this file.",
+    "Treat this file as the conceptual identity of the project, not its implementation."
+  ],
+
+  "notes": [
+    "The 'id' field is the only required field and must never change.",
+    "The 'tag' field may be added later when the project becomes well-defined.",
+    "This format intentionally avoids defining project state (such as active or inactive). State belongs to other systems such as the Temple of Focus.",
+    "Additional fields may be introduced as the system evolves."
+  ]
+}

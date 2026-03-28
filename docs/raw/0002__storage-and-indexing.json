@@ -1,0 +1,82 @@
+{
+  "document": {
+    "document-id": "zoo.storage-and-indexing.v1",
+    "title": "Zoo Storage and Indexing",
+    "tags": ["zoo", "storage", "indexing", "filesystem", "machineroot"],
+    "purpose": "Describe where Zoo project files are stored, how they are located via Machine-Root, and how indexing is handled.",
+    "author": ["Lion Kimbro", "ChatGPT"],
+    "status": "draft",
+    "version": "v1"
+  },
+
+  "overview": {
+    "basic": "Zoo stores projects as individual JSON files within a directory structure rooted at a Machine-Root entry.",
+    "separation": "This document describes storage and indexing only. The structure of individual project files is defined in zoo.project-json.format.v1.",
+    "philosophy": "Storage is simple and transparent. Indexes are optional and derived. The filesystem is the source of truth."
+  },
+
+  "location": {
+    "machine-root-key": "db-root-2026",
+    "resolution": "The root directory is obtained via Machine-Root using the key 'db-root-2026'.",
+    "zoo-root": "<db-root-2026>/zoo/",
+    "projects-path": "<db-root-2026>/zoo/projects/",
+    "note": "The 'db-root-2026' key identifies a system-era root, not data limited to the year 2026."
+  },
+
+  "project-files": {
+    "structure": "Each project is stored as a separate JSON file.",
+    "filename": "<guid>.json",
+    "location": "<db-root-2026>/zoo/projects/",
+    "reference": "zoo.project-json.format.v1",
+    "character": [
+      "Each file represents exactly one project.",
+      "Files may be added, removed, or edited independently.",
+      "The filesystem layout is flat within the projects directory."
+    ]
+  },
+
+  "indexing": {
+    "optional": true,
+    "index-file": "<db-root-2026>/zoo/index.json",
+    "purpose": "Provide a faster way to enumerate and search projects without scanning all project files.",
+    "character": [
+      "The index is derived data and not authoritative.",
+      "The index may be rebuilt at any time from project files.",
+      "Systems must not rely on the index being present or up to date."
+    ]
+  },
+
+  "index-format": {
+    "basic": "The index contains a list of project summaries.",
+    "fields": [
+      "id",
+      "title",
+      "tag",
+      "tags",
+      "created"
+    ]
+  },
+
+  "tools": {
+    "planned": [
+      "GUI application for browsing, creating, and editing Zoo projects",
+      "CLI and Python API for programmatic access to Zoo",
+      "Tool for mapping filesystem folders to Zoo projects",
+      "Integration with Zookeep for repository-backed projects"
+    ],
+    "note": "Tools operate on the filesystem representation and should not require a database layer."
+  },
+
+  "future-considerations": [
+    "Additional index files for specialized queries (e.g., by tag or date)",
+    "Linking systems to express relationships between projects",
+    "Background processes to maintain or validate indexes"
+  ],
+
+  "conventions": [
+    "Do not store filesystem paths inside project JSON files.",
+    "Treat the filesystem as the primary storage mechanism.",
+    "Treat index files as caches, not sources of truth.",
+    "Prefer simplicity and inspectability over abstraction."
+  ]
+}
