@@ -1,0 +1,29 @@
+date: 2022-03-22
+title: Project Inbox
+
+This is an inbox of messages for me about this project.
+
+
+== Mainloop rework ==
+date: 2022-03-22
+redirect: f:/repo/liontk/liontk/INBOX.txt
+
+
+== Bug: Interrupted while typing into entry ==
+date: 2022-03-31
+tags: bug input entry interruption
+
+  The problem is that when you are entering a tag,
+  and type the first space, you haven't yet entered
+  a second tag, and so it goes, "that's not right,
+  there's not supposed to be a space left over here..."
+  ...and so it deletes it, because it identifies no
+  meaningful change.
+
+  If you race ahead and put another tag in there,
+  "OK," it respects that.
+
+  I think the solution to this problem is to say --
+  If the cursor is in an entry box, DON'T put anything
+  on top of it.  It's immune to being pasted into.
+

@@ -1,0 +1,186 @@
+# A
+
+
+# B
+
+
+# C
+
+
+# D
+
+
+# E
+
+
+# F
+
+>files:
+  recorded 2022-03-21:
+    inventory:
+      searchfile.py
+      go.py: init & exec
+      gui.py: a variant of my Tk routines
+        modifications: see "gui.py modifications"
+      listdict.py: std. Python list operations
+      menubar.py: tcl code for a menubar, attachable via (attach)
+        relies on: $w
+        builds: a menu
+          containing: File: Search, Add Project, Exit
+      paths.py: getting paths for file resources; also, reading from & writing to paths
+      proj.py: projects data access
+        see: "project data"
+      searchwin.py: a search window
+        features: tag search entry box, and results
+        result: ID, Title, Created, Hook
+        see: "search window"
+      symbols.py: symbols listing
+    sub-index:
+      skeleton: go.py
+      utilities: gui.py, listdict.py, symbols.py, paths.py
+      windows: searchwin.py
+      windows assist: menubar.py
+      data: proj.py
+    additional files of note:
+      my local PROJ.txt file: f:/bigfiles/onedrive2022/OneDrive/origins/2021/data/lists/PROJ/PROJ.txt
+
+
+# G
+
+>gui.py modifications:
+  added:
+    permanent_tasks: tasks that ALWAYS happen, until they are removed manually
+    do_task: performs task step (part of modification of mainloop_tasks)
+    permtask_fn: this is ugly, but, there it is
+    poke_list: poke a list to a temporary value
+    tree_clear: clear a tree
+    tree_add: add a row to a tree (AND NEEDS TO BE REWORKED)
+    tree_selected: return list of selected nodes
+  modified:
+    mainloop_tasks: call permanent tasks as well as one-time tasks
+  ideas:
+    fold tasks into ordinary functions, so there's no longer "task type" concept
+      see: mainloop_tasks, task_closetop, task_fn, task_exit, permtask_fn...
+
+>gui.py questions:
+  per-window updates: how best to deliver updates per-window?
+    how to register or unregister a window?
+    how to see if a window is alive or not?
+    how do I know which is the current window?
+    how do I note information on a per-window basis?
+    how to make recurring tasks?
+      my solution: adding permanent_tasks, which are manually added and removed
+
+
+# H
+
+
+# I
+
+
+# J
+
+
+# K
+
+
+# L
+
+>logs:
+  2022-03-21: revisiting
+    long:
+      01: I see that the author had worked on the Search Projects page, and I'm
+      02: pretty sure the author intended for individual projects to have their
+      03: own, editable pages.
+      04:
+      05: It would seem that the next steps would be:
+      06: 1. make it so that search works
+      07: 2. make it so that you can look at an individual entry and edit it
+      08: 3. make it so that you can add new entries
+
+
+# M
+
+
+# N
+
+
+# O
+
+>overview:
+  file layout: see "files"
+  creation logs: see "logs"
+  modifications to my tk gui.py system: see "gui.py modifications"
+  questions for my tk gui.py system: see "gui.py questions"
+
+
+# P
+
+>project data:
+  PROJ.txt data format:
+    ID: "####"
+    TAG: "tag:lionkimbro@gmail.com,2022-03-21:example" (Tag URIs -- taguri.org)
+    TITLE: "Human Readable Title"
+    CREATED: "yyyy-mm-dd"
+    TAGS: ["foo", "bar", "baz", ...]
+    LOC: "0000"  -- the subdirectory that contains the project resources
+    HOOK: "human readable hook string"
+  update notice:
+    variable: g[UPDATE]
+      when ACTIVE: in the last cycle, the project data was updated
+      when TODO: an ACTIVE cycle is pending
+      when None: no updates
+      permission: anybody can set this to TODO at any time, and that is safe
+        caveat: if set to TODO while an ACTIVE is processing, there may be a double-hit for some
+        important: operations from the update should be idempotent
+
+>project window:
+  Tk names:
+    .projwin####
+      .basics: [FRAME]
+      ...
+  project identification: read the RO $top.basics.id_v, to identify the window's project
+
+
+# Q
+
+
+# R
+
+
+# S
+
+>search window:
+  Tk names:
+    .searchwin
+      .search: [frame]
+        .e: <titlevar: kENTRY> entry box (for tags search)
+          previously seen value stored in: lasttime[0]
+      .results: [frame]
+        .tree: <titlevar: kTREE> tree of results
+          columns: #0 title created hook
+        .slider: vertical scrollbar
+  variables:
+    last_time[...]: local storage for delta detection
+      [0]: last text seen in .searchwin.search.e
+
+
+# T
+
+
+# U
+
+
+# V
+
+
+# W
+
+
+# X
+
+
+# Y
+
+
+# Z
