@@ -1,0 +1,118 @@
+{
+  "document": {
+    "document-id": "zoo.linking-external-systems-before-m1.v1",
+    "title": "Linking External Systems Before M1",
+    "tags": ["zoo", "linking", "external-systems", "folders", "repositories", "tables"],
+    "purpose": "Describe a simple pre-M1 scheme for linking Zoo projects to external folders and repositories without placing resource paths inside project JSON files.",
+    "author": ["Lion Kimbro", "ChatGPT"],
+    "status": "draft",
+    "version": "v1"
+  },
+
+  "overview": {
+    "basic": "Zoo should continue to treat a project as an abstract project identity, while external resources such as legacy folders and repositories are represented through separate data files.",
+    "goal": "Allow Zoo to notice linked external resources, report when they are available on the local machine, and offer actions such as opening a local folder.",
+    "non-goal": "This design is not the full M1 system. It is a small, data-centered bridge that can be implemented sooner and later translated into richer linking models."
+  },
+
+  "design-principles": [
+    "Do not store filesystem paths inside project JSON files.",
+    "Keep project identity separate from machine-local resource resolution.",
+    "Represent cross-system associations as data, not hard-coded procedural rules.",
+    "Use portable symbolic references where possible, and local tables where necessary.",
+    "Prefer a format that can later be translated into M1 links and tables."
+  ],
+
+  "files": {
+    "local-folders-table": {
+      "filename": "local-folders-table.json",
+      "location": "<machine-root:db-root-2026>/zoo/",
+      "scope": "machine-local",
+      "purpose": "Map folder GUIDs to concrete local filesystem paths on the current machine.",
+      "presence": "Optional. It may exist on one machine and be absent on another.",
+      "structure": {
+        "<folder-guid>": "<filepath>"
+      },
+      "example": {
+        "6b6d5d0f-3ab0-4c58-9635-8bbd8f1fc001": "F:\\legacy\\proj\\0001",
+        "e8a9f9d4-3a61-4e67-80a2-8b22f55c3b91": "F:\\legacy\\proj\\0002"
+      }
+    },
+    "sidecar-project-links": {
+      "filename": "sidecar-project-links.json",
+      "location": "<machine-root:db-root-2026>/zoo/",
+      "scope": "shared-zoo-data",
+      "purpose": "Record abstract links from Zoo projects to external resource identities such as folders or repositories.",
+      "structure": [
+        {
+          "from": "<project-guid>",
+          "to": "<resource-guid>",
+          "kind": "folder or repo",
+          "label": "Human-readable label",
+          "source": "Origin of the link information"
+        }
+      ],
+      "example": [
+        {
+          "from": "2e9839be-cf7f-4cb5-b41e-85d1fd2b5a77",
+          "to": "6b6d5d0f-3ab0-4c58-9635-8bbd8f1fc001",
+          "kind": "folder",
+          "label": "Projlist legacy folder",
+          "source": "legacy-remainder.json"
+        },
+        {
+          "from": "2e9839be-cf7f-4cb5-b41e-85d1fd2b5a77",
+          "to": "repo-guid-example",
+          "kind": "repo",
+          "label": "Primary repository",
+          "source": "manual"
+        }
+      ]
+    }
+  },
+
+  "resource-kinds": {
+    "folder": {
+      "meaning": "A resource identity representing a filesystem folder.",
+      "resolution": "Zoo may resolve the folder to a concrete local path by looking up the resource GUID in local-folders-table.json."
+    },
+    "repo": {
+      "meaning": "A resource identity representing a repository.",
+      "resolution-note": "Repository links should not assume a fixed absolute path across machines.",
+      "preferred-resolution-direction": "Resolve repositories later through a machine-root-based scheme such as <machine-root:LOCAL-GITHUB-REPO-CHECKOUTS>/<repo-name> or equivalent symbolic data."
+    }
+  },
+
+  "startup-behavior": [
+    "On startup, Zoo should load sidecar-project-links.json if present.",
+    "On startup, Zoo should also load local-folders-table.json if present.",
+    "Zoo should keep these structures in memory as supporting link-resolution data.",
+    "If one file is missing, Zoo should continue operating with partial knowledge."
+  ],
+
+  "runtime-behavior": [
+    "When viewing a project, Zoo should check whether sidecar-project-links.json contains any links whose 'from' field matches the project's GUID.",
+    "For each link of kind 'folder', Zoo should determine whether the linked folder GUID is present in local-folders-table.json.",
+    "If the folder GUID resolves locally, Zoo should present that linked folder as locally available and may show a button that opens the folder.",
+    "If the folder GUID does not resolve locally, Zoo should still show that the project has a folder link, but indicate that the folder is not available on this machine.",
+    "For links of kind 'repo', Zoo may initially display the existence of the link even before full machine-local repository resolution is implemented."
+  ],
+
+  "why-two-files": {
+    "separation": "sidecar-project-links.json expresses abstract cross-system associations, while local-folders-table.json expresses machine-local path resolution.",
+    "benefit": "This preserves portability of the shared project-link data while still allowing concrete actions on machines that possess the relevant resources.",
+    "m1-direction": "The scheme loosely resembles an M1 combination of links plus tables, making it a reasonable bridge toward a later identity-centered system."
+  },
+
+  "future-translation": [
+    "sidecar-project-links.json could later translate naturally into M1-style links.",
+    "local-folders-table.json could later translate naturally into an M1-style table mapping resource identity to local location.",
+    "Repository resolution may later use a corresponding local repositories table or another symbolic machine-root-based resolver."
+  ],
+
+  "notes": [
+    "This design intentionally prefers simple JSON files over a more abstract provider architecture.",
+    "The first practical target is folder-link visibility and local folder opening.",
+    "The scheme is intentionally small so it can be implemented before larger M1 work begins."
+  ]
+}
