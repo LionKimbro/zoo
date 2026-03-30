@@ -5,6 +5,7 @@ from .symbols import *
 import json
 import os
 import subprocess
+from pathlib import Path
 
 import machineroot
 
@@ -25,8 +26,23 @@ def index_path():
     return os.path.join(zoo_root(), "index.json")
 
 
+def local_folders_table_path():
+    return os.path.join(zoo_root(), "local-folders-table.json")
+
+
+def sidecar_project_links_path():
+    return os.path.join(zoo_root(), "sidecar-project-links.json")
+
+
 def project_path(project_id):
     return os.path.join(projects_root(), project_id + ".json")
+
+
+def project_file_paths():
+    root = Path(projects_root())
+    if not root.exists():
+        return []
+    return sorted(root.glob("*.json"))
 
 
 def path_for(sym):
@@ -83,6 +99,14 @@ def write_project(project_id, data):
     _write_json_file_atomic(project_path(project_id), data)
 
 
+def read_local_folders_table():
+    return _read_json_file(local_folders_table_path(), default={})
+
+
+def read_sidecar_project_links():
+    return _read_json_file(sidecar_project_links_path(), default=[])
+
+
 def windows_open_file(sym):
     p = path_for(sym)
     subprocess.call(["notepad", p])
@@ -96,4 +120,8 @@ def windows_open_dir(sym):
 def windows_open_project(project_id):
     p = project_path(project_id)
     subprocess.call(["notepad", p])
+
+
+def windows_open_folder_path(path):
+    subprocess.Popen(["explorer", path])
 

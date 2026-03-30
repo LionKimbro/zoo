@@ -7,6 +7,7 @@ from . import util
 from . import guiutil
 
 from . import proj
+from . import links
 from .proj import kTAG, kTITLE, kCREATED, kTAGS, kHOOK  # kID -- name conflict
 
 
@@ -26,8 +27,10 @@ ttk::label $top.basics.hook_k -text "hook:"
 ttk::entry $top.basics.hook_v -width 80
 ttk::labelframe $top.ops -text "operations"
 ttk::button $top.ops.open -text "open json" -command projwin_openproj
+ttk::button $top.ops.openfolder -text "open folder" -command projwin_openfolder -state disabled
 ttk::labelframe $top.info -text "info"
-ttk::label $top.info.hint
+ttk::label $top.info.folder_k -text "folder:"
+ttk::label $top.info.hint -text "No linked folder."
 
 grid $top.basics -row 0 -column 0 -sticky nsew
 grid $top.ops -row 1 -column 0 -sticky nsew
@@ -47,8 +50,10 @@ grid $top.basics.hook_k -row 5 -column 0 -sticky e
 grid $top.basics.hook_v -row 5 -column 1 -sticky w
 
 grid $top.ops.open -row 0 -column 0
+grid $top.ops.openfolder -row 0 -column 1
 
-grid $top.info.hint
+grid $top.info.folder_k -row 0 -column 0 -sticky e
+grid $top.info.hint -row 0 -column 1 -sticky w
 """
 
 source_code = """
@@ -112,12 +117,14 @@ tkROOT = ".projwin"  # base name for projwin windows
 tkID = "$top.basics.id_v"  # the project ID for this window
 tkTITLE = "$top.basics.title_v"  # the Title entry for this window
 tkHINT = "$top.info.hint"  # the hint label (NOT USED YET)
+tkOPENFOLDER = "$top.ops.openfolder"
 
 
 # Functions -- Setup
 
 def setup():
     gui.mkcmd("projwin_openproj", openproj)
+    gui.mkcmd("projwin_openfolder", openfolder)
     gui.permtask_fn(update)
 
 
@@ -155,6 +162,13 @@ def curproj():
 def openproj():
     from . import paths
     paths.windows_open_project(curproj()[proj.kID])
+
+
+def openfolder():
+    D = curproj()
+    if D is None:
+        return
+    links.open_folder_for_project(D[proj.kID])
 
 
 # Update Cycle
@@ -198,5 +212,20 @@ def update_win():
         proj.note_changed()  # tell proj that something (an "anything") changed
     elif proj.g[UPDATE] == ACTIVE:
         guiutil.fill_repopulate()
+    update_linked_folder_status(D)
+
+
+def update_linked_folder_status(D):
+    status = links.folder_link_status(D[proj.kID])
+
+    gui.cue(tkHINT)
+    gui.poke("tmp", status["message"])
+    gui.tclexec("$w configure -text $tmp")
+
+    gui.cue(tkOPENFOLDER)
+    if status["available"]:
+        gui.tclexec("$w configure -state normal")
+    else:
+        gui.tclexec("$w configure -state disabled")
 
 

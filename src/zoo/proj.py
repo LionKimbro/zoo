@@ -6,6 +6,7 @@ import uuid
 
 from . import util
 from . import paths
+from . import links
 from . import listdict
 
 
@@ -44,6 +45,7 @@ def load():
     g[DATA] = paths.read_index()
     if g[DATA] is None:
         g[DATA] = []
+    links.load()
     g[PROJECTS].clear()
     g[DIRTY].clear()
     note_changed()
@@ -51,6 +53,20 @@ def load():
 
 def _summary_for(D):
     return {k: D[k] for k in SUMMARY_FIELDS if k in D}
+
+
+def rebuild_index():
+    index_rows = []
+    for project_path in paths.project_file_paths():
+        D = paths.read_project(project_path.stem)
+        if D is None:
+            continue
+        index_rows.append(_summary_for(D))
+
+    g[DATA] = index_rows
+    paths.write_index(index_rows)
+    note_changed()
+    return index_rows
 
 
 def _sync_summary(project_id):

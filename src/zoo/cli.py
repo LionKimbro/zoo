@@ -12,10 +12,16 @@ except ModuleNotFoundError:
     import lionscliapp as app
 
 from . import go
+from . import proj
 
 
 def run():
     go.run()
+
+
+def rebuild_index():
+    index_rows = proj.rebuild_index()
+    print(f"Rebuilt index with {len(index_rows)} projects.")
 
 
 app.declare_app("zoo", "2026.03")
@@ -30,6 +36,9 @@ app.describe_cmd("", "Launch the Zoo GUI")
 
 app.declare_cmd("run", run)
 app.describe_cmd("run", "Launch the Zoo GUI")
+
+app.declare_cmd("rebuild-index", rebuild_index)
+app.describe_cmd("rebuild-index", "Rebuild index.json from project files")
 
 
 def main():
