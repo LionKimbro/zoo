@@ -60,7 +60,8 @@ def setup():
     gui.mkcmd("opensourcedir", lambda: gui.task_fn(opensourcedir))
     gui.mkcmd("reloadsource", lambda: gui.task_fn(reloadsource))
     gui.mkcmd("savestate", lambda: gui.task_fn(savestate))
-    gui.mkcmd("closewindow", lambda: gui.task_fn(closewindow))
+    # Close immediately so we capture the originating window before focus can drift.
+    gui.mkcmd("closewindow", closewindow)
     gui.mkcmd("exitprogram", gui.task_exit)
 
 def attach():

@@ -19,16 +19,16 @@ ttk::treeview $w.results.tree -selectmode browse -columns "title created hook" -
 ttk::scrollbar $w.results.slider -orient vertical -command "$w.results.tree yview"
 
 $w.results.tree column #0 -width 60
-$w.results.tree heading #0 -text "ID"
+$w.results.tree heading #0 -text "ID" -command searchwin_sort_id
 
 $w.results.tree column title -width 300
-$w.results.tree heading title -text "Title"
+$w.results.tree heading title -text "Title" -command searchwin_sort_title
 
 $w.results.tree column created -width 100
-$w.results.tree heading created -text "Created"
+$w.results.tree heading created -text "Created" -command searchwin_sort_created
 
 $w.results.tree column hook -width 600
-$w.results.tree heading hook -text "Hook"
+$w.results.tree heading hook -text "Hook" -command searchwin_sort_hook
 
 grid $w.search -row 0 -column 0 -rowspan 1 -columnspan 1 -sticky nsew
 grid $w.results -row 1 -column 0 -rowspan 1 -columnspan 1 -sticky nsew
@@ -62,6 +62,10 @@ tkTREE = ".searchwin.results.tree"  # the results tree
 def setup():
     gui.mkcmd("searchwin_tree_doubleclick", tree_doubleclick)
     gui.mkcmd("searchwin_tree_focusin", tree_focusin)
+    gui.mkcmd("searchwin_sort_id", lambda: sort_by(proj.kID))
+    gui.mkcmd("searchwin_sort_title", lambda: sort_by(proj.kTITLE))
+    gui.mkcmd("searchwin_sort_created", lambda: sort_by(proj.kCREATED))
+    gui.mkcmd("searchwin_sort_hook", lambda: sort_by(proj.kHOOK))
     gui.permtask_fn(update)
     # TODO: make it so that the enter key triggers a command that performs a search
     # gui.mkcmd("dosearch", repopulate)
@@ -73,6 +77,46 @@ def open_up():
         gui.lift()
         lasttime[0] = None
 
+sort_key = [None]
+sort_reverse = [False]
+
+sort_headings = {
+    proj.kID: ("#0", "ID"),
+    proj.kTITLE: ("title", "Title"),
+    proj.kCREATED: ("created", "Created"),
+    proj.kHOOK: ("hook", "Hook"),
+}
+
+
+def sort_by(k):
+    if sort_key[0] == k:
+        sort_reverse[0] = not sort_reverse[0]
+    else:
+        sort_key[0] = k
+        sort_reverse[0] = False
+    repopulate()
+
+
+def _sort_value(D, k):
+    return str(D.get(k, "") or "").casefold()
+
+
+def _sorted_rows(rows):
+    if sort_key[0] is None:
+        return rows
+    return sorted(rows,
+                  key=lambda D: (_sort_value(D, sort_key[0]),
+                                 _sort_value(D, proj.kTITLE),
+                                 _sort_value(D, proj.kID)),
+                  reverse=sort_reverse[0])
+
+
+def _refresh_sort_headings():
+    for k, (column, label) in sort_headings.items():
+        marker = ""
+        if sort_key[0] == k:
+            marker = " v" if sort_reverse[0] else " ^"
+        gui.tclexec("{} heading {} -text {}".format(tkTREE, column, gui.quote(label + marker)))
 
 # Callback -- repop(ulate)
 
@@ -81,14 +125,21 @@ def repopulate():
     gui.cue(tkENTRY)
     txt = gui.text_get()
     gui.cue(tkTREE)
-    # TODO: get the selection, if there is one
+    selected_id = util.first(gui.tree_selected())
     gui.tree_clear()
-    for D in proj.locate_tagged(txt):
+    rows = _sorted_rows(list(proj.locate_tagged(txt)))
+    row_ids = []
+    for D in rows:
+        row_id = D.get(proj.kID, "")
+        row_ids.append(row_id)
         gui.tree_add(D.get(proj.kID, ""),
                      [D.get(proj.kTITLE, ""),
                       D.get(proj.kCREATED, ""),
                       D.get(proj.kHOOK, "")])
-    # TODO: repopulate the selected one, if possible
+    _refresh_sort_headings()
+    if selected_id in row_ids:
+        gui.tree_select([selected_id])
+        gui.tree_focus(selected_id)
 
 
 # Periodic Updates (every 100ms)
